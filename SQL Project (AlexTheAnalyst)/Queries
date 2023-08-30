@@ -63,3 +63,14 @@ where continent is null
 and location not like '%income%'
 Group by location
 Order by 2 desc
+
+
+--LOOKING AT CONTINENTS WITH HIGHEST DEATH COUNT PER POPULATION
+
+Select location, population, MAX(cast(total_deaths as float)) as TotalDeathCount, round((MAX(cast(total_deaths as float))/population)*100, 3) as DeathPercentPerContinent
+From PortfolioProject..CovidDeaths
+--WHERE location like '%Nigeria%'
+where continent is null
+and location not like '%income%'
+Group by location, population
+Order by 4 desc
