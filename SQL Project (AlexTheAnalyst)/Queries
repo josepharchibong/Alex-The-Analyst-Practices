@@ -74,3 +74,33 @@ where continent is null
 and location not like '%income%'
 Group by location, population
 Order by 4 desc
+
+
+--LOOKING AT GLOBAL NUMBERS
+
+
+--LOOKING AT THE TOTAL CASES VS TOTAL DEATHS WORLWIDE. 
+--AIM IS SHOW DEATH PERCENTAGE PER DAY
+
+SELECT date, SUM(new_cases) as TotalCasesDaily, SUM(new_deaths) as TotalDeathsDaily, ROUND(SUM(new_deaths)/NULLIF(SUM(new_cases), 0)*100, 4) as DeathPercentage
+FROM PortfolioProject..CovidDeaths
+	WHERE continent is not null
+	GROUP BY date
+	ORDER BY 1
+
+
+--SHOWING THE GLOBAL DEATH PERCENTAGE AS AT 10th of July, 2023.
+
+SELECT  SUM(new_cases) as TotalCases, SUM(new_deaths) as TotalDeaths, ROUND(SUM(new_deaths)/NULLIF(SUM(new_cases), 0)*100, 4) as DeathPercentage
+FROM PortfolioProject..CovidDeaths
+	WHERE continent is not null
+
+
+
+--LOOKING AT TOTAL CASES VS POPULATION
+--AIM IS TO SHOW PERCENTAGE OF POPULATION THAT GOT COVID GLOBALLY
+
+SELECT date, SUM(population) as GlobalPopulation, SUM(new_cases) as TotalCasesDaily, SUM(new_cases)/SUM(population)*100 as PopulationPercent
+FROM PortfolioProject..CovidDeaths
+	GROUP BY date
+	ORDER BY 1
