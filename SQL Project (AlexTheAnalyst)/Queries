@@ -104,3 +104,74 @@ SELECT date, SUM(population) as GlobalPopulation, SUM(new_cases) as TotalCasesDa
 FROM PortfolioProject..CovidDeaths
 	GROUP BY date
 	ORDER BY 1
+
+
+
+--JOINING CovidDeaths and CovidVaccinations together on Date and Location
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+	FROM PortfolioProject..CovidDeaths as dea
+	JOIN PortfolioProject..CovidVaccinations as vac
+		ON dea.date = vac.date
+		AND dea.location = vac.location
+	WHERE dea.continent is not null
+	ORDER BY 1,2
+
+--ROLLING COUNT FOR DAILY VACCINATION
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, 
+SUM(cast(vac.new_vaccinations as float)) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) as RollingVaccination
+	FROM PortfolioProject..CovidDeaths as dea
+	JOIN PortfolioProject..CovidVaccinations as vac
+		ON dea.date = vac.date
+		AND dea.location = vac.location
+	WHERE dea.continent is not null
+	ORDER BY 2,3
+
+
+
+--LOOKING AT THE TOTAL POPULATION VS VACCINATIONS
+--SHOWING THE PERCENTAGE OF THE POPULATION THAT GOT VACCINATED
+
+--USING CTE (Common Table Expressions)
+WITH PopulationVsVaccinations (continent, location, date, population, new_vaccinations, RollingVaccination)
+AS
+(
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, 
+SUM(cast(vac.new_vaccinations as float)) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) as RollingVaccination
+	FROM PortfolioProject..CovidDeaths as dea
+	JOIN PortfolioProject..CovidVaccinations as vac
+		ON dea.date = vac.date
+		AND dea.location = vac.location
+	WHERE dea.continent is not null
+)
+
+SELECT *, ROUND((RollingVaccination/population)*100, 4) as PopVaccPercent
+FROM PopulationVsVaccinations
+
+--USING Temp Tables
+
+DROP TABLE IF exists #PopulationVsVaccinations
+CREATE TABLE #PopulationVsVaccinations
+(
+Continent nvarchar(255),
+Location nvarchar(255),
+date datetime,
+Population numeric,
+new_vaccinations numeric,
+RollingVaccination numeric
+)
+INSERT INTO #PopulationVsVaccinations
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, 
+SUM(cast(vac.new_vaccinations as float)) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) as RollingVaccination
+	FROM PortfolioProject..CovidDeaths as dea
+	JOIN PortfolioProject..CovidVaccinations as vac
+		ON dea.date = vac.date
+		AND dea.location = vac.location
+	WHERE dea.continent is not null
+
+SELECT *, ROUND((RollingVaccination/population)*100, 4) as PopVaccPercent
+FROM #PopulationVsVaccinations
+
+
+
