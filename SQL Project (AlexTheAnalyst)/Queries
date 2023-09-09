@@ -173,5 +173,5 @@ SUM(cast(vac.new_vaccinations as float)) OVER (PARTITION BY dea.location ORDER B
 SELECT *, ROUND((RollingVaccination/population)*100, 4) as PopVaccPercent
 FROM #PopulationVsVaccinations
 
-
+---------------------------END-----------------------------------------
 
